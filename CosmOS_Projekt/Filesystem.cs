@@ -29,6 +29,12 @@ namespace CosmOS_Projekt
                 case "fs":
                     fsCommand();
                     break;
+                case "dirList":
+                    dirListing();
+                    break;
+                case "vi":
+                    readFile(args[2]);
+                    break;
                 default:
                     Console.WriteLine("Unknown command, try \"help\" for a quick view of all commands!");
                     break;
@@ -53,6 +59,43 @@ namespace CosmOS_Projekt
             foreach (var file in files_list)
             {
                 Console.WriteLine(file);
+            }
+        }
+
+        private void dirListing()
+        {
+            var files_list = Directory.GetFiles(@"0:\");
+            var directory_list = Directory.GetDirectories(@"0:\");
+
+            foreach (var file in files_list)
+            {
+                Console.WriteLine(file);
+            }
+            foreach (var directory in directory_list)
+            {
+                Console.WriteLine(directory);
+            }
+        }
+
+
+        //TODO crash beheben bei File-Angabe
+        private void readFile(string dir)
+        {
+            var files_list = Directory.GetFiles(@dir);
+            try
+            {
+                foreach (var file in files_list)
+                {
+                    var content = File.ReadAllText(file);
+
+                    Console.WriteLine("File name: " + file);
+                    Console.WriteLine("File size: " + content.Length);
+                    Console.WriteLine("Content: " + content);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
         }
 

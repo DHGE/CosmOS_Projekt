@@ -69,7 +69,7 @@ namespace CosmOS_Projekt
                               "[OPTIONS] - specifies the specific commands\n" +
                               "free - outputs the free memory of the system\n" + 
                               "type - outputs the type of the system\n" +
-                              "ls - list of all files in directory\n");
+                              "fs - list of all files in directory\n");
         }
 
         private void runtimeCommand()
