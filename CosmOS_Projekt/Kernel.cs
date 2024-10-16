@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Sys = Cosmos.System;
 
 namespace CosmOS_Projekt
 {
     public class Kernel : Sys.Kernel
     {
-
         public static DateTime momentOfStart;
         public static Sys.FileSystem.CosmosVFS fs;  // Static variable for filesystem
 
@@ -24,12 +20,12 @@ namespace CosmOS_Projekt
         protected override void Run()
         {
             var input = Console.ReadLine();
-
             string[] args = input.Split(' ');
+
+            if (args.Length < 1) return;
 
             Commands command = new Commands();
             command.commands(args);
-
         }
     }
 }

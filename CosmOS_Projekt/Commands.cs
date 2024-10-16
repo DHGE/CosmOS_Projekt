@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sys = Cosmos.System;
 
 namespace CosmOS_Projekt
@@ -10,9 +8,28 @@ namespace CosmOS_Projekt
     internal class Commands
     {
         private string currentVersion = "Version 1.0";
-        
-        Memory mem = new Memory();
-        Filesystem filesys = new Filesystem();
+        private Dictionary<string, Action<string[]>> commandMap;
+
+        public Commands()
+        {
+            InitializeCommands();
+        }
+
+        private void InitializeCommands()
+        {
+            commandMap = new Dictionary<string, Action<string[]>>
+            {
+                { "help", args => helpCommand() },
+                { "runtime", args => runtimeCommand() },
+                { "version", args => Console.WriteLine(currentVersion) },
+                { "shutdown", args => shutdownCommand() },
+                { "exit", args => shutdownCommand() },
+                { "echo", args => echoCommand(args) },
+                { "tempsave", args => tempsaveCommand() },
+                { "file", args => InitializeFilesystem(args) }
+            };
+        }
+
         public void commands(string[] args)
         {
             if (args.Length == 0)
@@ -21,36 +38,22 @@ namespace CosmOS_Projekt
                 return;
             }
 
-            // The first argument is the command, the rest are command-specific arguments.
             string command = args[0].ToLower();
 
-            switch (command)
+            if (commandMap.ContainsKey(command))
             {
-                case "help":
-                    helpCommand();
-                    break;
-                case "runtime":
-                    runtimeCommand();
-                    break;
-                case "version":
-                    Console.WriteLine(currentVersion);
-                    break;
-                case "shutdown":
-                case "exit":
-                    shutdownCommand();
-                    break;
-                case "echo":
-                    echoCommand(args);
-                    break;
-                case "tempsave":
-                    tempsaveCommand();
-                    break;
-                case "file":
-                    filesys.fileCommands(args);
-                    break;
-                default:
-                    Console.WriteLine("Unknown command, try \"help\" for a quick view of all commands!");
-                    break;
+                try
+                {
+                    commandMap[command](args);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error executing command '{command}': {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Unknown command, try \"help\" for a quick view of all commands!");
             }
         }
 
@@ -67,9 +70,12 @@ namespace CosmOS_Projekt
                               "To access the specific commands for the filesystem use the following format\n" +
                               "file [OPTIONS]..\n" +
                               "[OPTIONS] - specifies the specific commands\n" +
-                              "free - outputs the free memory of the system\n" + 
-                              "type - outputs the type of the system\n" +
-                              "fs - list of all files in directory\n");
+                              "free - outputs the free memory of the system\n" +
+                              "type - outputs the type of the system\n\n" +
+                              "ls [PATH] - list of all files in directory\n" +
+                              "If no Path is specified, it returns all file inside the 0:\\ DOS drive\n\n" +
+                              "vi [PATH] - reads content from a given file. \n" +
+                              "There is no need to specify a drive since CosmOS uses the DOS drive naming system.\n\n");
         }
 
         private void runtimeCommand()
@@ -85,7 +91,6 @@ namespace CosmOS_Projekt
 
         private void echoCommand(string[] args)
         {
-            // Print all arguments after "echo" as a single line.
             if (args.Length > 1)
             {
                 Console.WriteLine(string.Join(" ", args.Skip(1)));
@@ -95,10 +100,20 @@ namespace CosmOS_Projekt
                 Console.WriteLine(); // If no additional text, just print an empty line.
             }
         }
+
         private void tempsaveCommand()
         {
+            // Assuming Memory is properly initialized and accessible
+            Memory mem = new Memory();
             mem.writeAt(0, 4);
             Console.WriteLine(mem.readAt(0).ToString());
+        }
+
+        private void InitializeFilesystem(string[] args)
+        {
+            Filesystem filesys = new Filesystem();
+            filesys.InitializeCommands();
+            filesys.fileCommands(args);
         }
     }
 }
