@@ -14,7 +14,7 @@ namespace CosmOS_Projekt
             {
                 { "free", args => freeCommand() },
                 { "type", args => typeCommand() },
-                { "ls", args => lsCommand(args.Length > 2 ? args[2] : " ") },
+                { "ls", args => lsCommand(args.Length > 2 ? args[2] : "") },
                 { "vi", args =>
                     {
                         if (args.Length < 3)
@@ -26,7 +26,19 @@ namespace CosmOS_Projekt
                             readFile(args[2]);
                         }
                     }
-                }
+                },
+                { "cat", args =>
+                    {
+                        if (args.Length < 3)
+                        {
+                            Console.WriteLine("Please provide a file path.");
+                        }
+                        else
+                        {
+                            catCommand(args[2]);
+                        }
+                    }
+                } 
             };
         }
         public void fileCommands(string[] args)
@@ -127,11 +139,7 @@ namespace CosmOS_Projekt
 
         private void readFile(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                Console.WriteLine("Error: No file path specified.");
-                return;
-            }
+            if (!checkString(filePath)) return;
 
             string fullPath = @"0:\" + filePath;
 
@@ -152,6 +160,39 @@ namespace CosmOS_Projekt
             {
                 Console.WriteLine("Error reading file: " + e.Message);
             }
+        }
+
+        private void catCommand(string path)
+        {
+            if (!checkString(path)) return;
+
+            string fullPath = @"0:\" + path;
+
+            var text = "\n";
+            while(text != "quit\n")
+            {
+                try
+                {
+                    File.AppendAllText(fullPath, text);
+                    text = Console.ReadLine();  
+                    text += '\n';
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+            }
+            Console.WriteLine("Quit editing");
+        }
+
+        bool checkString(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Console.WriteLine("Error: No file path specified.");
+                return false;
+            }
+            return true;
         }
     }
 }
