@@ -128,7 +128,7 @@ namespace CosmOS_Projekt
                     foreach (var file in filesList)
                     {
                         Console.WriteLine("FILE: " + file);
-                    }
+                    } //test
                 }
             }
             catch (Exception ex)
