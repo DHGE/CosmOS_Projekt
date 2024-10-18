@@ -15,7 +15,6 @@ namespace CosmOS_Projekt
                 { "free", args => freeCommand() },
                 { "type", args => typeCommand() },
                 { "ls", args => lsCommand(args.Length > 2 ? args[2] : "") },
-                { "vi", args => readFile(args) },
                 { "cat", args => catCommand(args) } 
             };
         }
@@ -115,61 +114,63 @@ namespace CosmOS_Projekt
             }
         }
 
-        private void readFile(string[] args)
+        private void catCommand(string[] args)
         {
-            if (!checkArgs(args, 3)) return;
+            // check if user specified a file
+            if(!checkArgs(args, 3)) return;
 
-            var filePath = args[2];
+            var path = args[2];
 
-            if (!checkString(filePath)) return;
+            // check if the given file is valid (white space or not even specified)
+            if (!checkString(path)) return;
+            // check if file exists
+            if (!checkFile(path)) return;
 
-            string fullPath = @"0:\" + filePath;
+            string fullPath = @"0:\" + path;
 
+            // print out the content of file
             try
             {
-                if (File.Exists(fullPath))
-                {
-                    string content = File.ReadAllText(fullPath);
-                    Console.WriteLine("File size: " + content.Length);
-                    Console.WriteLine("Content: " + content);
-                }
-                else
-                {
-                    Console.WriteLine("File not found: " + filePath);
-                }
+                string content = File.ReadAllText(fullPath);
+                Console.WriteLine("File size: " + content.Length);
+                Console.WriteLine("Content: " + content);
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error reading file: " + e.Message);
             }
-        }
 
-        private void catCommand(string[] args)
-        {
-            if(!checkArgs(args, 3)) return;
+            // check what the user wants to do
+            Console.WriteLine("\nWhat do you want to do?\n" +
+                              "Write - w | Read - r");
+            var input = Console.ReadLine();
 
-            var path = args[2];
-
-            if (!checkString(path)) return;
-            if (!checkFile(path)) return;
-
-            string fullPath = @"0:\" + path;
-
-            var text = "\n";
-            while(text != "quit\n")
+            // get the input
+            if (input.ToLower() == "r") return;
+            else if (input.ToLower() != "w" || input.ToLower() != "r")
             {
-                try
-                {
-                    File.AppendAllText(fullPath, text);
-                    text = Console.ReadLine();  
-                    text += '\n';
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
+                Console.WriteLine("Invalid operation, please try one of the above!");
+                return;
             }
-            Console.WriteLine("Quit editing");
+            else
+            {
+                var text = "\n";
+                while(text != "quit\n")
+                {
+                    // append the file with the given text
+                    try
+                    {
+                        File.AppendAllText(fullPath, text);
+                        text = Console.ReadLine();  
+                        text += '\n';
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                }
+                Console.WriteLine("Quit editing");
+            }
         }
 
         bool checkString(string path)
