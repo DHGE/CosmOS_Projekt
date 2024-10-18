@@ -143,39 +143,33 @@ namespace CosmOS_Projekt
             // check what the user wants to do
             Console.WriteLine("\nWhat do you want to do?\n" +
                               "Write - w | Read - r");
-
             var input = Console.ReadLine();
 
             // get the input
-            while(input.ToLower() != "w" || input.ToLower() != "r")
+            if (input.ToLower() == "r") return;
+            else if (input.ToLower() != "w" || input.ToLower() != "r")
             {
-                if (input.ToLower() == "r") return;
-                else if (input.ToLower() == "w")
+                Console.WriteLine("Invalid operation, please try one of the above!");
+                return;
+            }
+            else
+            {
+                var text = "\n";
+                while(text != "quit\n")
                 {
-                    var text = "\n";
-                    while (text != "quit\n")
+                    // append the file with the given text
+                    try
                     {
-                        // append the file with the given text
-                        try
-                        {
-                            File.AppendAllText(fullPath, text);
-                            text = Console.ReadLine();
-                            text += '\n';
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.ToString());
-                        }
+                        File.AppendAllText(fullPath, text);
+                        text = Console.ReadLine();  
+                        text += '\n';
                     }
-                    Console.WriteLine("Quit editing");
-                    return;
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("Invalid operation, please try one of the above!");
-                    input = Console.ReadLine();
-                }
-                
+                Console.WriteLine("Quit editing");
             }
         }
 
