@@ -161,19 +161,8 @@ namespace CosmOS_Projekt
                         text += '\n';
                     }
                     catch (Exception e)
-
                     {
-                        // append the file with the given text
-                        try
-                        {
-                            File.AppendAllText(fullPath, text);
-                            text = Console.ReadLine();  
-                            text += '\n';
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.ToString());
-                        }
+                         Console.WriteLine(e.ToString());
                     }
                     Console.WriteLine("Quit editing");
                     return;
