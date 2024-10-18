@@ -160,7 +160,7 @@ namespace CosmOS_Projekt
                     // append the file with the given text
                     try
                     {
-                        File.AppendAllText(fullPath, text);
+                        File.AppendAllText(fullPath, text);//test 2
                         text = Console.ReadLine();  
                         text += '\n';
                     }
