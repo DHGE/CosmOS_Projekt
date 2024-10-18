@@ -15,30 +15,8 @@ namespace CosmOS_Projekt
                 { "free", args => freeCommand() },
                 { "type", args => typeCommand() },
                 { "ls", args => lsCommand(args.Length > 2 ? args[2] : "") },
-                { "vi", args =>
-                    {
-                        if (args.Length < 3)
-                        {
-                            Console.WriteLine("Please provide a file path.");
-                        }
-                        else
-                        {
-                            readFile(args[2]);
-                        }
-                    }
-                },
-                { "cat", args =>
-                    {
-                        if (args.Length < 3)
-                        {
-                            Console.WriteLine("Please provide a file path.");
-                        }
-                        else
-                        {
-                            catCommand(args[2]);
-                        }
-                    }
-                } 
+                { "vi", args => readFile(args) },
+                { "cat", args => catCommand(args) } 
             };
         }
         public void fileCommands(string[] args)
@@ -128,7 +106,7 @@ namespace CosmOS_Projekt
                     foreach (var file in filesList)
                     {
                         Console.WriteLine("FILE: " + file);
-                    } //test
+                    }
                 }
             }
             catch (Exception ex)
@@ -137,8 +115,12 @@ namespace CosmOS_Projekt
             }
         }
 
-        private void readFile(string filePath)
+        private void readFile(string[] args)
         {
+            if (!checkArgs(args, 3)) return;
+
+            var filePath = args[2];
+
             if (!checkString(filePath)) return;
 
             string fullPath = @"0:\" + filePath;
@@ -162,9 +144,14 @@ namespace CosmOS_Projekt
             }
         }
 
-        private void catCommand(string path)
+        private void catCommand(string[] args)
         {
+            if(!checkArgs(args, 3)) return;
+
+            var path = args[2];
+
             if (!checkString(path)) return;
+            if (!checkFile(path)) return;
 
             string fullPath = @"0:\" + path;
 
@@ -193,6 +180,29 @@ namespace CosmOS_Projekt
                 return false;
             }
             return true;
+        }
+        
+        bool checkFile(string path)
+        {
+            var filePath = @"0:\" + path;
+            if (File.Exists(filePath)) return true;
+            Console.WriteLine("File does not exist!");
+            return false;
+        }
+
+        bool checkDir(string path)
+        {
+            var filePath = @"0:\" + path;
+            if (Directory.Exists(filePath)) return true;
+            Console.WriteLine("Directory does not exist!");
+            return false;
+        }
+
+        bool checkArgs(string[] args, int index)
+        {
+            if (args.Length == index) return true;
+            Console.WriteLine("Missing arguments");
+            return false;
         }
     }
 }
