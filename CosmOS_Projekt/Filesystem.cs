@@ -145,18 +145,14 @@ namespace CosmOS_Projekt
                               "Write - w | Read - r");
             var input = Console.ReadLine();
 
-            // get the input
-            if (input.ToLower() == "r") return;
-            else if (input.ToLower() != "w" || input.ToLower() != "r")
+            while(input.ToLower() != "w" || input.ToLower() != "r")
             {
-                Console.WriteLine("Invalid operation, please try one of the above!");
-                return;
-            }
-            else
-            {
-                var text = "\n";
-                while(text != "quit\n")
+                // get the input
+                if (input.ToLower() == "r") return;
+                else if (input.ToLower() == "w")
                 {
+                    var text = "\n";
+                    while(text != "quit\n")
                     // append the file with the given text
                     try
                     {
@@ -165,11 +161,28 @@ namespace CosmOS_Projekt
                         text += '\n';
                     }
                     catch (Exception e)
+
                     {
-                        Console.WriteLine(e.ToString());
+                        // append the file with the given text
+                        try
+                        {
+                            File.AppendAllText(fullPath, text);
+                            text = Console.ReadLine();  
+                            text += '\n';
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.ToString());
+                        }
                     }
+                    Console.WriteLine("Quit editing");
+                    return;
                 }
-                Console.WriteLine("Quit editing");
+                else
+                {
+                    Console.WriteLine("Invalid operation, please try one of the above!");
+                    input = Console.ReadLine();
+                }
             }
         }
 
