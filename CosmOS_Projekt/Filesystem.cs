@@ -82,7 +82,7 @@ namespace CosmOS_Projekt
 
             try
             {
-                if (!Directory.Exists(directoryPath))//test lol
+                if (!Directory.Exists(directoryPath))
                 {
                     Console.WriteLine("Error: The specified path does not exist.");
                     return;
