@@ -153,6 +153,15 @@ namespace CosmOS_Projekt
                 {
                     var text = "\n";
                     while(text != "quit\n")
+                    // append the file with the given text
+                    try
+                    {
+                        File.AppendAllText(fullPath, text);//test 2
+                        text = Console.ReadLine();  
+                        text += '\n';
+                    }
+                    catch (Exception e)
+
                     {
                         // append the file with the given text
                         try
