@@ -153,18 +153,18 @@ namespace CosmOS_Projekt
                 else if (input.ToLower() == "w")
                 {
                     var text = "";
-                    while (text != "quit\n")
-                        // append the file with the given text
-                        try
-                        {
-                            File.AppendAllText(fullPath, text);
-                            text = Console.ReadLine();
-                            text += '\n';
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.ToString());
-                        }
+                    while(text != "quit\n")
+                    // append the file with the given text
+                    try
+                    {
+                        File.AppendAllText(fullPath, text);
+                        text = Console.ReadLine();  
+                        text += '\n';
+                    }
+                    catch (Exception e)
+                    {
+                         Console.WriteLine(e.ToString());
+                    }
                     Console.WriteLine("Quit editing");
                     return;
                 }
