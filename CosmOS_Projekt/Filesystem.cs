@@ -15,7 +15,8 @@ namespace CosmOS_Projekt
                 { "free", args => freeCommand() },
                 { "type", args => typeCommand() },
                 { "ls", args => lsCommand(args.Length > 2 ? args[2] : "") },
-                { "cat", args => catCommand(args) } 
+                { "cat", args => catCommand(args) },
+                { "touch", args => touchCommand(args) }
             };
         }
         public void fileCommands(string[] args)
@@ -117,7 +118,7 @@ namespace CosmOS_Projekt
         private void catCommand(string[] args)
         {
             // check if user specified a file
-            if(!checkArgs(args, 3)) return;
+            if (!checkArgs(args, 3)) return;
 
             var path = args[2];
 
@@ -145,18 +146,18 @@ namespace CosmOS_Projekt
                               "Write - w | Read - r");
             var input = Console.ReadLine();
 
-            while(input.ToLower() != "w" || input.ToLower() != "r")
+            while (input.ToLower() != "w" || input.ToLower() != "r")
             {
                 // get the input
                 if (input.ToLower() == "r") return;
                 else if (input.ToLower() == "w")
                 {
-                    var text = "\n";
+                    var text = "";
                     while(text != "quit\n")
                     // append the file with the given text
                     try
                     {
-                        File.AppendAllText(fullPath, text);//test 2
+                        File.AppendAllText(fullPath, text);
                         text = Console.ReadLine();  
                         text += '\n';
                     }
@@ -175,6 +176,32 @@ namespace CosmOS_Projekt
             }
         }
 
+        private void touchCommand(string[] args)
+        {
+            // check if user specified a file
+            if (!checkArgs(args, 3)) return;
+
+            var path = @args[2];
+
+            // check if the given file is valid (white space or not even specified)
+            if (!checkString(path)) return;
+
+            try
+            {
+                // if the file already exists, do nothing
+                if (File.Exists(path))
+                {
+                    Console.WriteLine("File already exists!");
+                    return;
+                }
+                var file_stream = Kernel.fs.CreateFile(@"0:\" + path);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
         bool checkString(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -184,7 +211,7 @@ namespace CosmOS_Projekt
             }
             return true;
         }
-        
+
         bool checkFile(string path)
         {
             var filePath = @"0:\" + path;
@@ -203,7 +230,7 @@ namespace CosmOS_Projekt
 
         bool checkArgs(string[] args, int index)
         {
-            if (args.Length == index) return true;
+            if (args.Length >= index) return true;
             Console.WriteLine("Missing arguments");
             return false;
         }
