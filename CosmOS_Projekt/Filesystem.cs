@@ -7,6 +7,7 @@ namespace CosmOS_Projekt
     internal class Filesystem
     {
         private Dictionary<string, Action<string[]>> commandMap;
+        private string path = @"0:\";
 
         public void InitializeCommands()
         {
@@ -15,8 +16,11 @@ namespace CosmOS_Projekt
                 { "free", args => freeCommand() },
                 { "type", args => typeCommand() },
                 { "ls", args => lsCommand(args.Length > 2 ? args[2] : "") },
+                { "dir", args => lsCommand(args.Length > 2 ? args[2] : "") },
                 { "cat", args => catCommand(args) },
-                { "touch", args => touchCommand(args) }
+                { "touch", args => touchCommand(args) },
+                { "mkdir", args => mkDirCommand(args) },
+                { "rm", args => rmCommand(args) }
             };
         }
         public void fileCommands(string[] args)
@@ -120,19 +124,17 @@ namespace CosmOS_Projekt
             // check if user specified a file
             if (!checkArgs(args, 3)) return;
 
-            var path = args[2];
+            path += args[2];
 
             // check if the given file is valid (white space or not even specified)
             if (!checkString(path)) return;
             // check if file exists
             if (!checkFile(path)) return;
 
-            string fullPath = @"0:\" + path;
-
             // print out the content of file
             try
             {
-                string content = File.ReadAllText(fullPath);
+                string content = File.ReadAllText(path);
                 Console.WriteLine("File size: " + content.Length);
                 Console.WriteLine("Content: " + content);
             }
@@ -157,7 +159,7 @@ namespace CosmOS_Projekt
                         // append the file with the given text
                         try
                         {
-                            File.AppendAllText(fullPath, text);
+                            File.AppendAllText(path, text);
                             text = Console.ReadLine();
                             text += '\n';
                         }
@@ -181,7 +183,7 @@ namespace CosmOS_Projekt
             // check if user specified a file
             if (!checkArgs(args, 3)) return;
 
-            var path = @args[2];
+            path += args[2];
 
             // check if the given file is valid (white space or not even specified)
             if (!checkString(path)) return;
@@ -194,12 +196,99 @@ namespace CosmOS_Projekt
                     Console.WriteLine("File already exists!");
                     return;
                 }
-                var file_stream = Kernel.fs.CreateFile(@"0:\" + path);
+                var file_stream = Kernel.fs.CreateFile(path);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
             }
+        }
+
+        private void mkDirCommand(string[] args)
+        {
+            // check if user specified a path
+            if (!checkArgs(args, 3)) return;
+
+            path += args[2];
+
+            // add a \ at the end to make sure its a valid directory
+            if (!path.EndsWith('\\')) { path += '\\'; }
+
+            // check if the given file is valid (white space or not even specified)
+            if (!checkString(path)) return;
+
+            try
+            {
+                // if the directory already exists, do nothing
+                if (Directory.Exists(path))
+                {
+                    Console.WriteLine("Directory already exists!");
+                    return;
+                }
+                Kernel.fs.CreateDirectory(path);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        private void rmCommand(string[] args)
+        {
+            // check if user specified a path
+            if (!checkArgs(args, 3)) return;
+
+            path += args[2];
+
+            // check if the given file is valid (white space or not even specified)
+            if (!checkString(path)) return;
+
+            Console.WriteLine("What do you want to delete?\n" +
+                              "f - file | d - directory");
+            var input = Console.ReadLine();
+
+            // loop through the input in case the user uses a wrong input
+            while(input.ToLower() != "f" || input.ToLower() != "d")
+            {
+                // check if user wants to delete file
+                if(input.ToLower() == "f")
+                {
+                    try
+                    {
+                        // check if file exists
+                        if(!checkFile(path)) return;
+                        File.Delete(path);
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                }
+                // checks if user wants to delete directory
+                else if(input.ToLower() == "d")
+                {
+                    try
+                    {
+                        // add a \ at the end to make sure its a valid directory
+                        if (!path.EndsWith('\\')) { path += '\\'; }
+
+                        // check if directoy exists
+                        if (!checkDir(path)) return;
+                        Directory.Delete(path);
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid operation, please try one of the above!");
+                    input = Console.ReadLine();
+                }
+            }            
         }
 
         bool checkString(string path)

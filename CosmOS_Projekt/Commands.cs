@@ -73,9 +73,14 @@ namespace CosmOS_Projekt
                               "free - outputs the free memory of the system\n" +
                               "type - outputs the type of the system\n\n" +
                               "ls [PATH] - list of all files in directory\n" +
+                              "dir [PATH] - list of all files in directory\n" +
                               "If no Path is specified, it returns all file inside the 0:\\ DOS drive\n\n" +
-                              "vi [PATH] - reads content from a given file. \n" +
-                              "There is no need to specify a drive since CosmOS uses the DOS drive naming system.\n\n");
+                              "cat [PATH] - reads content from a given file.\n" +
+                              "Is also used to write into a given file.\n" +
+                              "There is no need to specify a drive since CosmOS uses the DOS drive naming system.\n\n" +
+                              "touch [PATH] - creates a new file inside the given path.\n" +
+                              "mkdir [PATH] - creates a new directory.\n" +
+                              "rm f || rm d - deletes given file or directory.\n");
         }
 
         private void runtimeCommand()
