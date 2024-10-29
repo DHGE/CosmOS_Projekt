@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sys = Cosmos.System;
+using CosmOS_Projekt.Userverwaltung;
 
 namespace CosmOS_Projekt
 {
     internal class Commands
     {
-        private string currentVersion = "Version 1.0";
+        private string currentVersion = "Version 1.2";
         private Dictionary<string, Action<string[]>> commandMap;
 
         public Commands()
@@ -120,6 +121,13 @@ namespace CosmOS_Projekt
             Filesystem filesys = new Filesystem();
             filesys.InitializeCommands();
             filesys.fileCommands(args);
+        }
+
+        private void InitializeUsers(string[] args)
+        {
+            UserCommands userCommands = new UserCommands();
+            userCommands.InitializeCommands();
+            userCommands.userCommands(args);
         }
     }
 }
