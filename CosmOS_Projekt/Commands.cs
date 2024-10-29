@@ -80,7 +80,8 @@ namespace CosmOS_Projekt
                               "There is no need to specify a drive since CosmOS uses the DOS drive naming system.\n\n" +
                               "touch [PATH] - creates a new file inside the given path.\n" +
                               "mkdir [PATH] - creates a new directory.\n" +
-                              "rm f || rm d - deletes given file or directory.\n");
+                              "rm f || rm d - deletes given file or directory.\n" +
+                              "mv [file] [dirToMove] - moves a file to another dir\n");
         }
 
         private void runtimeCommand()

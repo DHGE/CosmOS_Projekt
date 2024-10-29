@@ -20,7 +20,8 @@ namespace CosmOS_Projekt
                 { "cat", args => catCommand(args) },
                 { "touch", args => touchCommand(args) },
                 { "mkdir", args => mkDirCommand(args) },
-                { "rm", args => rmCommand(args) }
+                { "rm", args => rmCommand(args) },
+                { "mv", args => mvCommand(args) }
             };
         }
         public void fileCommands(string[] args)
@@ -176,7 +177,7 @@ namespace CosmOS_Projekt
                     // append the file with the given text
                     try
                     {
-                        File.AppendAllText(path, text);
+                        File.WriteAllText(path, text);
                         text = Console.ReadLine();  
                         text += '\n';
                     }
@@ -274,16 +275,12 @@ namespace CosmOS_Projekt
                         // Überprüfen, ob die Eingabe gültig ist
                         if (!checkString(input)) return;
 
-                        string filePath = Path.Combine(path, input);
+                        path += input;
 
                         // Überprüfen, ob die Datei existiert
-                        if (!checkFile(filePath))
-                        {
-                            Console.WriteLine("File does not exist.");
-                            return;
-                        }
+                        if (!checkFile(path)) return;
 
-                        File.Delete(filePath);
+                        File.Delete(path);
                         Console.WriteLine("Successfully deleted file!");
                     }
                     catch (Exception e)
@@ -301,19 +298,15 @@ namespace CosmOS_Projekt
                         // Überprüfen, ob die Eingabe gültig ist
                         if (!checkString(input)) return;
 
-                        string dirPath = Path.Combine(path, input);
+                        path += input;
 
                         // Sicherstellen, dass der Pfad mit einem '\' endet, falls nicht vorhanden
-                        if (!dirPath.EndsWith('\\')) dirPath += '\\';
+                        if (!path.EndsWith('\\')) path += '\\';
 
                         // Überprüfen, ob das Verzeichnis existiert
-                        if (!checkDir(dirPath))
-                        {
-                            Console.WriteLine("Directory does not exist.");
-                            return;
-                        }
+                        if (!checkDir(path)) return;
 
-                        Directory.Delete(dirPath);
+                        Directory.Delete(path);
                         Console.WriteLine("Successfully deleted directory!");
                     }
                     catch (Exception e)
@@ -327,6 +320,36 @@ namespace CosmOS_Projekt
                                       "f - for deleting a file\n" +
                                       "d - for deleting a directory");
                     break;
+            }
+        }
+
+        private void mvCommand(string[] args)
+        {
+            // Überprüfen, ob genügend Argumente übergeben wurden
+            // file mv [filename] [pathToMove]
+            if (!checkArgs(args, 4)) return;
+
+            // Überprüfen, ob das dritte Argument ein gültiger String ist
+            if (!checkString(args[2])) return;
+
+            // Überprüfen, ob das vierte Argument ein gültiger String ist
+            if (!checkString(args[3])) return;
+
+            path += args[2];
+            string pathToMove = @"0:\" + args[3];
+
+            try
+            {
+                if (checkFile(path) && checkDir(pathToMove))
+                {
+                    File.Copy(path, pathToMove);
+                    File.Delete(path);
+                }
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
