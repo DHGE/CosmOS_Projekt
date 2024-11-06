@@ -1,30 +1,28 @@
-﻿using Cosmos.System.Network.IPv4.TCP;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CosmOS_Projekt.Userverwaltung
 {
     internal class UserCommands
     {
+        private Dictionary<string, Action<string[]>> commandMap;
 
-        public UserCommands() 
-        { 
+        public UserCommands()
+        {
             InitializeCommands();
         }
 
-        private Dictionary<string, Action<string[]>> commandMap;
+        public static char[] forbiddenpwchars = new char[] { 'ü', 'Ü', 'ä', 'Ä', 'ö', 'Ö', ' ' };
 
         public void InitializeCommands()
         {
             commandMap = new Dictionary<string, Action<string[]>>
             {
+                { "help", args => helpCommand() },
                 { "create", args => createCommand(args) }
             };
         }
+
         public void userCommands(string[] args)
         {
             if (args.Length < 2)
@@ -52,28 +50,90 @@ namespace CosmOS_Projekt.Userverwaltung
             }
         }
 
+        private void helpCommand()
+        {
+            Console.WriteLine(
+                    "User Commands:\n" +
+                    "To access the specific commands for users use the following format\n" +
+                    "user [OPTIONS]..\n" +
+                    "[OPTIONS] - specifies the specific commands\n" +
+                    "create - creates a new user");
+        }
+
         private void createCommand(string[] args)
         {
-            Console.Write("Enter Username:");
-            string username = Console.ReadLine();
+            string username = PromptForInput("Enter Username: ");
+            if (username == null) return;
 
-            Console.Write("Enter Vorname:");
-            string vorname = Console.ReadLine();
+            string vorname = PromptForInput("Enter Vorname:");
+            string nachname = PromptForInput("Enter Nachname:");
 
-            Console.Write("Enter Nachname:");
-            string nachname = Console.ReadLine();
-
-            Console.Write("Enter Password:");
-            string password = Console.ReadLine();
+            string password = PromptForPassword();
+            if (password == null) return;
 
             try
             {
                 User usr = new User(username, vorname, nachname, password);
+                Console.WriteLine("User successfully created.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+
+        private string PromptForPassword()
+        {
+            string password;
+            while (true)
+            {
+                Console.Write("Enter Password: ");
+                password = Console.ReadLine();
+
+                if (!isvalidpw(password))
+                {
+                    continue;
+                }
+
+                Console.Write("Enter Password again: ");
+                string passwordretype = Console.ReadLine();
+
+                if (password != passwordretype)
+                {
+                    Console.WriteLine("Passwords do not match, please try again.");
+                    continue;
+                }
+
+                break;
+            }
+
+            return password;
+        }
+
+        private string PromptForInput(string promptMessage)
+        {
+            Console.Write(promptMessage);
+            return Console.ReadLine();
+        }
+
+        public bool isvalidpw(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+            {
+                Console.WriteLine("Password is too short - min. 6 characters");
+                return false;
+            }
+
+            foreach (char c in forbiddenpwchars)
+            {
+                if (password.Contains(c))
+                {
+                    Console.WriteLine($"Invalid character '{c}' in password.");
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

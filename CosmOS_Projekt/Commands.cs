@@ -13,10 +13,12 @@ namespace CosmOS_Projekt
         public static string currentDirectory = @"0:\"; // Startverzeichnis
         private Dictionary<string, Action<string[]>> commandMap;
         private Filesystem filesys;
+        UserCommands userCommands;
 
         public Commands()
         {
             filesys = new Filesystem();
+            userCommands = new UserCommands();
             InitializeCommands();
         }
 
@@ -30,8 +32,9 @@ namespace CosmOS_Projekt
                 { "shutdown", args => shutdownCommand() },
                 { "exit", args => shutdownCommand() },
                 { "echo", args => echoCommand(args) },
+                { "cd", args => cdCommand(args) },
                 { "file", args => InitializeFilesystem(args) },
-                { "cd", args => cdCommand(args) }
+                { "user", args => InitializeUsers(args) },
             };
         }
 
@@ -106,7 +109,9 @@ namespace CosmOS_Projekt
                               "cd [directory] - changes to specified directory\n" +
                               "cd .. - moves one directory up\n\n" +
                               "Filesystem Commands:\n" +
-                              "file help - list all filesystem commands\n");
+                              "file help - list all filesystem commands\n\n" +
+                              "User Commands:\n" +
+                              "user help - list all user specific commands\n");
         }
 
         private void runtimeCommand()
@@ -138,8 +143,7 @@ namespace CosmOS_Projekt
         }
 
         private void InitializeUsers(string[] args)
-        {
-            UserCommands userCommands = new UserCommands();
+        { 
             userCommands.userCommands(args);
         }
     }

@@ -15,6 +15,8 @@ namespace CosmOS_Projekt
 
             Console.WriteLine("Cosmos booted successfully. Type a line of text to get it echoed back.");
             momentOfStart = DateTime.Now;
+
+            Console.WriteLine(@"0:\");
         }
 
         protected override void Run()
