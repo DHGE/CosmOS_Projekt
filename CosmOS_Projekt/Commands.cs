@@ -85,6 +85,11 @@ namespace CosmOS_Projekt
             }
             else
             {
+                if (!target.EndsWith("\\"))
+                {
+                    target += "\\";
+                }
+
                 string newPath = Path.Combine(currentDirectory, target);
 
                 if (Directory.Exists(newPath))
