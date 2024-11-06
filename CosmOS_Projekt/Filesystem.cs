@@ -6,17 +6,32 @@ namespace CosmOS_Projekt
 {
     internal class Filesystem
     {
+
+        private string path = Commands.currentDirectory;
+
+        public Filesystem()
+        {
+            InitializeCommands();
+        }
+
         private Dictionary<string, Action<string[]>> commandMap;
-        private string path = @"0:\";
+
+        // forbidden chars for files
+        public char[] forbiddenchars = new char[]{
+            '$',
+            '%',
+            '_',
+        };
 
         public void InitializeCommands()
         {
             commandMap = new Dictionary<string, Action<string[]>>
             {
+                { "help", args => helpCommand() },
                 { "free", args => freeCommand() },
                 { "type", args => typeCommand() },
-                { "ls", args => lsCommand(args.Length > 2 ? args[2] : "") },
-                { "dir", args => lsCommand(args.Length > 2 ? args[2] : "") },
+                { "ls", args => lsCommand(args) },
+                { "dir", args => lsCommand(args) },
                 { "cat", args => catCommand(args) },
                 { "touch", args => touchCommand(args) },
                 { "mkdir", args => mkDirCommand(args) },
@@ -28,7 +43,7 @@ namespace CosmOS_Projekt
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Missing arguments, try \"help\" for a quick view of all commands!");
+                Console.WriteLine("Missing arguments, try \"file help\" for a quick view of all file commands!");
                 return;
             }
 
@@ -49,6 +64,27 @@ namespace CosmOS_Projekt
             {
                 Console.WriteLine($"Error executing command '{command}': {ex.Message}");
             }
+        }
+
+        private void helpCommand()
+        {
+            Console.WriteLine(
+                    "Filesystem Commands:\n" +
+                    "To access the specific commands for the filesystem use the following format\n" +
+                    "file [OPTIONS]..\n" +
+                    "[OPTIONS] - specifies the specific commands\n" +
+                    "free - outputs the free memory of the system\n" +
+                    "type - outputs the type of the system\n\n" +
+                    "ls [PATH] - list of all files in directory\n" +
+                    "dir [PATH] - list of all files in directory\n" +
+                    "If no Path is specified, it returns all file inside the 0:\\ DOS drive\n\n" +
+                    "cat [PATH] - reads content from a given file.\n" +
+                    "Is also used to write into a given file.\n" +
+                    "There is no need to specify a drive since CosmOS uses the DOS drive naming system.\n\n" +
+                    "touch [PATH] - creates a new file inside the given path.\n" +
+                    "mkdir [PATH] - creates a new directory.\n" +
+                    "rm f || rm d - deletes given file or directory.\n" +
+                    "mv [file] [dirToMove] - moves a file to another dir\n");
         }
 
         private void freeCommand()
@@ -82,20 +118,29 @@ namespace CosmOS_Projekt
             }
         }
 
-        private void lsCommand(string path)
+        private void lsCommand(string[] args)
         {
-            string directoryPath = string.IsNullOrEmpty(path) ? @"0:\" : @"0:\" + path;
+
+            // check if user specified a path
+            // if a path is specified, use it, otherwise dont use it
+            if (args.Length == 3)
+            {
+                path += args[2];
+            }
+
+            // check if the given file is valid (white space or not even specified)
+            if (!checkString(path)) return;
 
             try
             {
-                if (!Directory.Exists(directoryPath))
+                if (!Directory.Exists(path))
                 {
                     Console.WriteLine("Error: The specified path does not exist.");
                     return;
                 }
 
-                var filesList = Directory.GetFiles(directoryPath);
-                var directoriesList = Directory.GetDirectories(directoryPath);
+                var filesList = Directory.GetFiles(path);
+                var directoriesList = Directory.GetDirectories(path);
 
                 if (filesList.Length == 0 && directoriesList.Length == 0)
                 {
@@ -214,6 +259,16 @@ namespace CosmOS_Projekt
                     Console.WriteLine("File already exists!");
                     return;
                 }
+
+                foreach(char c in forbiddenchars)
+                {
+                    if (path.Contains(c))
+                    {
+                        Console.WriteLine("Filename contains invalid character!");
+                        return;
+                    }
+                }
+
                 Kernel.fs.CreateFile(path);
                 Console.WriteLine("Successfully created file!");
             }
@@ -322,34 +377,53 @@ namespace CosmOS_Projekt
                     break;
             }
         }
-
+        
         private void mvCommand(string[] args)
         {
             // Überprüfen, ob genügend Argumente übergeben wurden
-            // file mv [filename] [pathToMove]
+            // file mv [filename/path] [pathToMove]
             if (!checkArgs(args, 4)) return;
 
-            // Überprüfen, ob das dritte Argument ein gültiger String ist
-            if (!checkString(args[2])) return;
+            // Überprüfen, ob das dritte und vierte Argument gültige Strings sind
+            if (!checkString(args[2]) || !checkString(args[3])) return;
 
-            // Überprüfen, ob das vierte Argument ein gültiger String ist
-            if (!checkString(args[3])) return;
-
-            path += args[2];
-            string pathToMove = @"0:\" + args[3];
+            // Extrahiere den Dateinamen aus args[2]
+            string sourcePath = Path.Combine(path, args[2]);
+            string fileName = Path.GetFileName(args[2]);
+            string destinationPath = Path.Combine(@"0:\", args[3]);
 
             try
             {
-                if (checkFile(path) && checkDir(pathToMove))
+                // Überprüfe, ob die Quelldatei und das Zielverzeichnis existieren
+                if (checkFile(sourcePath) && checkDir(destinationPath))
                 {
-                    File.Copy(path, pathToMove);
-                    File.Delete(path);
+                    // Überprüfen, ob die Datei bereits im Zielverzeichnis existiert
+                    if (File.Exists(destinationPath + "\\" + fileName))
+                    {
+                        Console.WriteLine("File already exists in the specified path. Do you want to replace it? (y/n)");
+                        string response = Console.ReadLine().ToLower();
+
+                        if (response != "y")
+                        {
+                            Console.WriteLine("File move operation cancelled.");
+                            return;
+                        }
+                    }
+
+                    // Kopiere die Datei ins Zielverzeichnis und lösche die Originaldatei
+                    File.Copy(sourcePath, destinationPath, true);
+                    File.Delete(sourcePath);
+
+                    Console.WriteLine("File moved successfully!");
                 }
-                
+                else
+                {
+                    Console.WriteLine("Source file or destination path not found.");
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"An error occurred: {e.Message}");
             }
         }
 

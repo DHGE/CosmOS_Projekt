@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using Sys = Cosmos.System;
 using CosmOS_Projekt.Userverwaltung;
+using System.IO;
 
 namespace CosmOS_Projekt
 {
     internal class Commands
     {
         private string currentVersion = "Version 1.2";
+        public static string currentDirectory = @"0:\"; // Startverzeichnis
         private Dictionary<string, Action<string[]>> commandMap;
+        private Filesystem filesys;
 
         public Commands()
         {
+            filesys = new Filesystem();
             InitializeCommands();
         }
 
@@ -26,8 +30,8 @@ namespace CosmOS_Projekt
                 { "shutdown", args => shutdownCommand() },
                 { "exit", args => shutdownCommand() },
                 { "echo", args => echoCommand(args) },
-                { "tempsave", args => tempsaveCommand() },
-                { "file", args => InitializeFilesystem(args) }
+                { "file", args => InitializeFilesystem(args) },
+                { "cd", args => cdCommand(args) }
             };
         }
 
@@ -46,6 +50,7 @@ namespace CosmOS_Projekt
                 try
                 {
                     commandMap[command](args);
+                    Console.Write($"{currentDirectory}> "); // Zeigt immer den aktuellen Pfad an
                 }
                 catch (Exception ex)
                 {
@@ -58,6 +63,38 @@ namespace CosmOS_Projekt
             }
         }
 
+        private void cdCommand(string[] args)
+        {
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Usage: cd [directory]");
+                return;
+            }
+
+            string target = args[1];
+
+            if (target == "..")
+            {
+                if (currentDirectory != @"0:\")
+                {
+                    currentDirectory = Directory.GetParent(currentDirectory)?.FullName ?? currentDirectory;
+                }
+            }
+            else
+            {
+                string newPath = Path.Combine(currentDirectory, target);
+
+                if (Directory.Exists(newPath))
+                {
+                    currentDirectory = newPath;
+                }
+                else
+                {
+                    Console.WriteLine($"Directory '{target}' does not exist.");
+                }
+            }
+        }
+
         private void helpCommand()
         {
             Console.WriteLine("This project has a variety of commands, see below to get a quick understanding of their abilities:\n\n" +
@@ -65,24 +102,11 @@ namespace CosmOS_Projekt
                               "runtime - outputs the runtime of this shell\n" +
                               "version - outputs the current version of the system\n" +
                               "shutdown || exit - shuts down the system\n" +
-                              "echo - outputs the given text\n" +
-                              "tempsave - idk\n\n" +
+                              "echo - outputs the given text\n\n" +
+                              "cd [directory] - changes to specified directory\n" +
+                              "cd .. - moves one directory up\n\n" +
                               "Filesystem Commands:\n" +
-                              "To access the specific commands for the filesystem use the following format\n" +
-                              "file [OPTIONS]..\n" +
-                              "[OPTIONS] - specifies the specific commands\n" +
-                              "free - outputs the free memory of the system\n" +
-                              "type - outputs the type of the system\n\n" +
-                              "ls [PATH] - list of all files in directory\n" +
-                              "dir [PATH] - list of all files in directory\n" +
-                              "If no Path is specified, it returns all file inside the 0:\\ DOS drive\n\n" +
-                              "cat [PATH] - reads content from a given file.\n" +
-                              "Is also used to write into a given file.\n" +
-                              "There is no need to specify a drive since CosmOS uses the DOS drive naming system.\n\n" +
-                              "touch [PATH] - creates a new file inside the given path.\n" +
-                              "mkdir [PATH] - creates a new directory.\n" +
-                              "rm f || rm d - deletes given file or directory.\n" +
-                              "mv [file] [dirToMove] - moves a file to another dir\n");
+                              "file help - list all filesystem commands\n");
         }
 
         private void runtimeCommand()
@@ -104,29 +128,18 @@ namespace CosmOS_Projekt
             }
             else
             {
-                Console.WriteLine(); // If no additional text, just print an empty line.
+                Console.WriteLine(); // Leere Zeile, falls kein Text angegeben
             }
-        }
-
-        private void tempsaveCommand()
-        {
-            // Assuming Memory is properly initialized and accessible
-            Memory mem = new Memory();
-            mem.writeAt(0, 4);
-            Console.WriteLine(mem.readAt(0).ToString());
         }
 
         private void InitializeFilesystem(string[] args)
         {
-            Filesystem filesys = new Filesystem();
-            filesys.InitializeCommands();
             filesys.fileCommands(args);
         }
 
         private void InitializeUsers(string[] args)
         {
             UserCommands userCommands = new UserCommands();
-            userCommands.InitializeCommands();
             userCommands.userCommands(args);
         }
     }
