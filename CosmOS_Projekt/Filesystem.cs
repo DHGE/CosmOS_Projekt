@@ -36,7 +36,8 @@ namespace CosmOS_Projekt
                 { "touch", args => touchCommand(args) },
                 { "mkdir", args => mkDirCommand(args) },
                 { "rm", args => rmCommand(args) },
-                { "mv", args => mvCommand(args) }
+                { "mv", args => mvCommand(args) },
+                { "cl", args => clearCommand(args) }
             };
         }
         public void fileCommands(string[] args)
@@ -84,7 +85,8 @@ namespace CosmOS_Projekt
                     "touch [PATH] - creates a new file inside the given path.\n" +
                     "mkdir [PATH] - creates a new directory.\n" +
                     "rm f || rm d - deletes given file or directory.\n" +
-                    "mv [file] [dirToMove] - moves a file to another dir\n");
+                    "mv [file] [dirToMove] - moves a file to another dir\n" +
+                    "cl [filename] - clears the content of a file");
         }
 
         private void freeCommand()
@@ -427,6 +429,29 @@ namespace CosmOS_Projekt
             }
         }
 
+        private void clearCommand(string[] args)
+        {
+            // check if user specified a path
+            if (!checkArgs(args, 3)) return;
+
+            // check if the given file is valid (white space or not even specified)
+            if (!checkString(path)) return;
+
+            path += args[2];
+
+            // check if file exists
+            if (!checkFile(path)) return;
+
+            try
+            {
+                File.WriteAllText(path, "");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
+        }
         bool checkString(string path)
         {
             if (string.IsNullOrEmpty(path))
