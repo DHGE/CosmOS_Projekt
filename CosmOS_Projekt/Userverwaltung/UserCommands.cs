@@ -11,6 +11,11 @@ namespace CosmOS_Projekt.Userverwaltung
     internal class UserCommands
     {
 
+        public UserCommands() 
+        { 
+            InitializeCommands();
+        }
+
         private Dictionary<string, Action<string[]>> commandMap;
 
         public void InitializeCommands()
