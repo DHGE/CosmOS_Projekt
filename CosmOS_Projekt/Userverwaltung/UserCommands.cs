@@ -8,9 +8,6 @@ namespace CosmOS_Projekt.Userverwaltung
     {
         private Dictionary<string, Action<string[]>> commandMap;
 
-        // Definiert verbotene Zeichen im Passwort
-        public static char[] forbiddenpwchars = new char[] { 'ü', 'Ü', 'ä', 'Ä', 'ö', 'Ö', ' ' };
-
         // Konstruktor: Initialisiert das Command Mapping
         public UserCommands()
         {
@@ -23,7 +20,9 @@ namespace CosmOS_Projekt.Userverwaltung
             commandMap = new Dictionary<string, Action<string[]>>
             {
                 { "help", args => helpCommand() },
-                { "create", args => createCommand(args) }
+                { "create", args => createCommand(args) },
+                { "setperm", args => setPermissionCommand(args) },
+                { "list", args => Console.WriteLine(UserControls.getAllUsers()) }
             };
         }
 
@@ -32,7 +31,7 @@ namespace CosmOS_Projekt.Userverwaltung
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Missing arguments, try \"help\" for a quick view of all commands!");
+                Console.WriteLine("Missing arguments, try \"user help\" for a quick view of all commands!");
                 return;
             }
 
@@ -47,7 +46,7 @@ namespace CosmOS_Projekt.Userverwaltung
                 }
                 else
                 {
-                    Console.WriteLine("Unknown command, try \"help\" for a quick view of all commands!");
+                    Console.WriteLine("Unknown command, try \" user help\" for a quick view of all commands!");
                 }
             }
             catch (Exception ex)
@@ -67,20 +66,32 @@ namespace CosmOS_Projekt.Userverwaltung
                 "create - creates a new user");
         }
 
-        // Erstellt einen neuen Benutzer und speichert diesen in der Konfigurationsdatei
         private void createCommand(string[] args)
         {
+            short perm = 0;
+
+            /*
+            logic for setting perm manually
+            */
+
+            createCommand(perm);
+        }
+
+        // Erstellt einen neuen Benutzer und speichert diesen in der Konfigurationsdatei
+        public static void createCommand(short perm)
+        {
             // Fordert Benutzername, Vorname, Nachname und Passwort an
-            string username = PromptForUniqueUsername();
-            string vorname = PromptForInput("Enter Vorname: ");
-            string nachname = PromptForInput("Enter Nachname: ");
-            string password = PromptForPassword();
+            string username = UserControls.PromptForUniqueUsername();
+            string vorname = UserControls.PromptForInput("Enter Vorname: ");
+            string nachname = UserControls.PromptForInput("Enter Nachname: ");
+            string password = UserControls.PromptForPassword();
 
             try
             {
                 // Erstellt ein neues User-Objekt und speichert es in der Konfigurationsdatei
-                User usr = new User(username, vorname, nachname, password);
-                string usrString = $"\n{usr.Username}:{usr.Vorname}:{usr.Nachname}:{usr.Password}";
+                User usr = new User(username, vorname, nachname, password, perm);
+                string pw = usr.GenerateHash(password);
+                string usrString = $"\n{usr.Username}:{usr.Vorname}:{usr.Nachname}:{pw}:{perm}";
 
                 File.AppendAllText(@"0:\Config\config.txt", usrString);
 
@@ -92,108 +103,10 @@ namespace CosmOS_Projekt.Userverwaltung
             }
         }
 
-        // Fordert den Benutzer auf, einen eindeutigen Benutzernamen einzugeben
-        private string PromptForUniqueUsername()
+        // setzt Permissions eines Nutzers (nur für Admins -> Permission = 1)
+        private void setPermissionCommand(string[] args)
         {
-            string username;
-            do
-            {
-                username = PromptForInput("Enter Username: ");
-                if (CheckUsernameExists(username))
-                {
-                    Console.WriteLine("Username already exists. Please enter a different username.");
-                    username = null;
-                }
-            } while (string.IsNullOrEmpty(username));
 
-            return username;
-        }
-
-        // Überprüft, ob der angegebene Benutzername bereits in der Konfigurationsdatei existiert
-        private bool CheckUsernameExists(string username)
-        {
-            if (File.Exists(@"0:\Config\config.txt"))
-            {
-                var lines = File.ReadAllLines(@"0:\Config\config.txt");
-                foreach (var line in lines)
-                {
-                    var split = line.Split(':');
-                    if (split.Length > 0 && split[0] == username)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        // Fordert das Passwort vom Benutzer an und prüft die Eingabebedingungen
-        private string PromptForPassword()
-        {
-            string password;
-            while (true)
-            {
-                Console.Write("Enter Password: ");
-                password = Console.ReadLine();
-
-                // Prüft, ob das Passwort gültig ist (Länge und keine verbotenen Zeichen)
-                if (!IsValidPassword(password))
-                {
-                    continue;
-                }
-
-                Console.Write("Enter Password again: ");
-                string passwordRetype = Console.ReadLine();
-
-                // Stellt sicher, dass beide Passworteingaben übereinstimmen
-                if (password != passwordRetype)
-                {
-                    Console.WriteLine("Passwords do not match, please try again.");
-                    continue;
-                }
-
-                break;
-            }
-
-            return password;
-        }
-
-        // Fordert eine Benutzereingabe an und stellt sicher, dass das Eingabefeld nicht leer ist
-        private string PromptForInput(string promptMessage)
-        {
-            string input;
-            do
-            {
-                Console.Write(promptMessage);
-                input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    Console.WriteLine("Input cannot be empty. Please try again.");
-                }
-            } while (string.IsNullOrWhiteSpace(input));
-
-            return input;
-        }
-
-        // Überprüft, ob das Passwort gültig ist: keine leeren Felder, Mindestlänge und keine verbotenen Zeichen
-        private bool IsValidPassword(string password)
-        {
-            if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
-            {
-                Console.WriteLine("Password is too short - min. 6 characters");
-                return false;
-            }
-
-            foreach (char c in forbiddenpwchars)
-            {
-                if (password.Contains(c))
-                {
-                    Console.WriteLine($"Invalid character '{c}' in password.");
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }
