@@ -58,7 +58,7 @@ namespace CosmOS_Projekt
                 }
                 else
                 {
-                    Console.WriteLine("Unknown command, try \"help\" for a quick view of all commands!");
+                    Console.WriteLine("Unknown command, try \"file help\" for a quick view of all commands!");
                 }
             }
             catch (Exception ex)

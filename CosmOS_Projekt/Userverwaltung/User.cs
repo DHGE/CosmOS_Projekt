@@ -13,14 +13,17 @@ namespace CosmOS_Projekt.Userverwaltung
         private string password;
         private string vorname;
         private string nachname;
-        private string permission;
+        // 0 - "no" permission (user)
+        // 1 - all permissions (admin)
+        private short permission;
 
-        public User(string username, string vorname, string nachname, string password)
+        public User(string username, string vorname, string nachname, string password, short permission)
         {
             this.username = username;
             this.vorname = vorname;
             this.nachname = nachname;
             this.password = password;
+            this.permission = permission;
         }
 
         public string Username
@@ -45,6 +48,33 @@ namespace CosmOS_Projekt.Userverwaltung
         {
             get { return nachname; }
             set { nachname = value; }
+        }
+
+        public short Permission
+        {
+            get { return permission; }
+            set { permission = value; }
+        }
+
+        public string GenerateHash(string input)
+        {
+            // Ein einfacher Hash-Algorithmus, der die Zeichen des Eingabestrings verarbeitet
+            StringBuilder hashBuilder = new StringBuilder();
+            int hash = 0;
+
+            foreach (char c in input)
+            {
+                hash += c;
+                hashBuilder.Append(hash % 10); // Füge die letzte Ziffer des Hashs hinzu
+            }
+
+            // Stelle sicher, dass der Hash mindestens 25 Zeichen lang ist
+            while (hashBuilder.Length < 25)
+            {
+                hashBuilder.Append(hashBuilder.ToString()); // Verdopple den Hash
+            }
+
+            return hashBuilder.ToString().Substring(0, 25); // Gebe die ersten 25 Zeichen zurück
         }
     }
 }
