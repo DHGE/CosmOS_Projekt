@@ -53,7 +53,6 @@ namespace CosmOS_Projekt
                 try
                 {
                     commandMap[command](args);
-                    Console.Write($"{currentDirectory}> "); // Zeigt immer den aktuellen Pfad an
                 }
                 catch (Exception ex)
                 {

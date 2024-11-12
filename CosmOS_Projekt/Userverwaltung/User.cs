@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CosmOS_Projekt.Userverwaltung
 {
-    internal class User
+    public class User
     {
         private string username;
         private string password;
@@ -16,6 +16,8 @@ namespace CosmOS_Projekt.Userverwaltung
         // 0 - "no" permission (user)
         // 1 - all permissions (admin)
         private short permission;
+
+        public User() { }
 
         public User(string username, string vorname, string nachname, string password, short permission)
         {

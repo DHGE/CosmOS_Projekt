@@ -20,22 +20,27 @@ namespace CosmOS_Projekt.Userverwaltung
 
             foreach (string line in File.ReadLines(@"0:\Config\config.txt"))
             {
-                if (line == "" || String.IsNullOrEmpty(line))
+                if (string.IsNullOrWhiteSpace(line)) continue;  // Skip empty lines
+
+                string[] info = line.Split(':');
+                if (info.Length < 5)
                 {
-                    return new List<User>();
+                    Console.WriteLine("Warning: Wrong format in file, skipping line.");
+                    continue;
                 }
-                string[] info = line.Split(":");
-                if (info.Length == 0)
-                {
-                    Console.WriteLine("Wrong format in file");
-                    return new List<User>();
-                }
-                else
+
+                try
                 {
                     short perm = short.Parse(info[4]);
                     users.Add(new User(info[0], info[1], info[2], info[3], perm));
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error parsing user line: {ex.Message}");
+                    // Continue to next line in case of an error
+                }
             }
+
             return users;
         }
 
@@ -55,9 +60,7 @@ namespace CosmOS_Projekt.Userverwaltung
                         Console.WriteLine($"Welcome back {user.Username}!");
                         return user;
                     }
-                    Console.WriteLine("Wrong password!");
                 }
-                Console.WriteLine("Wrong username!");
             }
             Console.WriteLine("\nIncorrect login, please try again!\n");
             return null;
