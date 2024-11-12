@@ -3,6 +3,7 @@ using Sys = Cosmos.System;
 using CosmOS_Projekt.Userverwaltung;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace CosmOS_Projekt
 {
@@ -10,8 +11,8 @@ namespace CosmOS_Projekt
     {
         public static DateTime momentOfStart;
         public static Sys.FileSystem.CosmosVFS fs;  // Static variable for filesystem
-        private List<User> users;
-        User currentUser = null;
+        public static List<User> users;
+        public static User currentUser = null;
 
         protected override void BeforeRun()
         {
@@ -24,18 +25,18 @@ namespace CosmOS_Projekt
 
             Console.WriteLine("Cosmos booted successfully.");
             momentOfStart = DateTime.Now;
+            Console.WriteLine("Please log in!\n");
         }
 
         protected override void Run()
         {
             checkUsers();
-            Console.WriteLine("Please log in!\n");
             while(currentUser == null)
             {
                 currentUser = UserControls.LoginUser();
             }
-            
-            Console.WriteLine("Enter your command:");
+
+            Console.Write($"{Commands.currentDirectory}> "); // Zeigt immer den aktuellen Pfad an
 
             var input = Console.ReadLine();
             string[] args = input.Split(' ');
@@ -48,25 +49,28 @@ namespace CosmOS_Projekt
 
         private void checkUsers()
         {
-            if (!File.Exists(@"0:\Config\config.txt")) fs.CreateFile(@"0:\Config\config.txt");
+            if (!File.Exists(@"0:\Config\config.txt"))
+            {
+                fs.CreateFile(@"0:\Config\config.txt");
+            }
 
             try
             {
                 users = UserControls.getAllUsers();
             }
-            catch (Exception ex) { Console.WriteLine(ex.Message); return; }
-
-            Console.WriteLine(users);
-
-            int adminCnt = 0;
-            foreach (User user in users)
+            catch (Exception ex)
             {
-                if (user.Permission == 1) adminCnt++;
+                Console.WriteLine($"Error loading users: {ex.Message}");
+                return;
             }
+
+            // Count admins in the users list
+            int adminCnt = users.Count(user => user.Permission == 1);
+
             if (adminCnt == 0)
             {
                 Console.WriteLine("There is no Admin account!\nPlease create one now!\n");
-                UserCommands.createCommand(1);
+                UserCommands.createCommand(1);  // Prompt to create an admin
             }
         }
     }
