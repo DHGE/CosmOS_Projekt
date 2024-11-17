@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace CosmOS_Projekt.Userverwaltung
 {
@@ -22,7 +23,8 @@ namespace CosmOS_Projekt.Userverwaltung
                 { "help", args => helpCommand() },
                 { "create", args => createCommand(args) },
                 { "setperm", args => setPermissionCommand(args) },
-                { "list", args => Console.WriteLine(UserControls.getAllUsers()) }
+                { "list", args => listUsersCommand() },
+                { "logout", args => Kernel.currentUser = null }
             };
         }
 
@@ -63,16 +65,30 @@ namespace CosmOS_Projekt.Userverwaltung
                 "To access the specific commands for users use the following format\n" +
                 "user [OPTIONS]..\n" +
                 "[OPTIONS] - specifies the specific commands\n" +
-                "create - creates a new user");
+                "create - creates a new user\n" +
+                "setperm - change the permission of a user\n" +
+                "list - lists all users");
         }
 
+        // createCommand, welcher die Eingabe überprüft
+        // keine Eingabe -> Berechtigung 0
+        // gültige Eingabe -> Berechtigung welche einegegeben wurde (mit check das keine höhere eingegeben wurde)
         private void createCommand(string[] args)
         {
-            short perm = 0;
+            if (args.Length < 3)
+            {
+                createCommand(0);
+                return;
+            }
 
-            /*
-            logic for setting perm manually
-            */
+            short userPerm = Kernel.currentUser.Permission;
+            short perm = short.Parse(args[2]);
+
+            if (perm > userPerm)
+            {
+                Console.WriteLine("You're not allowed to create a user with higher permissions!");
+                return;
+            }
 
             createCommand(perm);
         }
@@ -107,6 +123,18 @@ namespace CosmOS_Projekt.Userverwaltung
         private void setPermissionCommand(string[] args)
         {
 
+        }
+
+        // gibt alle vorhanden User auf der Befehlszeile aus
+        private void listUsersCommand()
+        {
+            Console.WriteLine("Username\tVorname\tNachname\tPermission");
+            foreach (var user in UserControls.getAllUsers())
+            {
+                Console.WriteLine($"{user.Username} : {user.Vorname} : {user.Nachname} : {user.Permission}");
+            }
+
+            Console.WriteLine($"\nTotal users: {UserControls.getAllUsers().Count}");
         }
     }
 }

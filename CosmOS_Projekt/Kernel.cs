@@ -4,6 +4,7 @@ using CosmOS_Projekt.Userverwaltung;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace CosmOS_Projekt
 {
@@ -25,7 +26,6 @@ namespace CosmOS_Projekt
 
             Console.WriteLine("Cosmos booted successfully.");
             momentOfStart = DateTime.Now;
-            Console.WriteLine("Please log in!\n");
         }
 
         protected override void Run()

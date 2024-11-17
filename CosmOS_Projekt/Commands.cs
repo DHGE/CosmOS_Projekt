@@ -35,6 +35,7 @@ namespace CosmOS_Projekt
                 { "cd", args => cdCommand(args) },
                 { "file", args => InitializeFilesystem(args) },
                 { "user", args => InitializeUsers(args) },
+                { "clear", args => Console.Clear() }
             };
         }
 
@@ -109,6 +110,7 @@ namespace CosmOS_Projekt
                               "runtime - outputs the runtime of this shell\n" +
                               "version - outputs the current version of the system\n" +
                               "shutdown || exit - shuts down the system\n" +
+                              "clear - clears all content from console\n" +
                               "echo - outputs the given text\n\n" +
                               "cd [directory] - changes to specified directory\n" +
                               "cd .. - moves one directory up\n\n" +
