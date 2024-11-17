@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CosmOS_Projekt.Userverwaltung
@@ -36,7 +37,7 @@ namespace CosmOS_Projekt.Userverwaltung
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error parsing user line: {ex.Message}");
+                    Console.WriteLine($"Error whilst reading user line: {ex.Message}");
                     // Continue to next line in case of an error
                 }
             }
@@ -47,22 +48,27 @@ namespace CosmOS_Projekt.Userverwaltung
         // login der User bei Systemstart
         public static User LoginUser()
         {
+            Console.Clear();
+
+            Console.WriteLine("Please log in!\n");
             Console.WriteLine("Please enter your username!");
             string username = Console.ReadLine();
-            Console.WriteLine("Please enter your password!");
-            string password = Console.ReadLine();
+            Console.WriteLine("\nPlease enter your password!");
+            string password = ReadPassword();
             foreach (User user in getAllUsers()) 
             {
                 if(user.Username == username)
                 {
                     if(user.GenerateHash(password) == user.Password)
                     {
-                        Console.WriteLine($"Welcome back {user.Username}!");
+                        Console.WriteLine($"\nWelcome back, {user.Username} ({user.Vorname})!\n");
                         return user;
                     }
                 }
             }
             Console.WriteLine("\nIncorrect login, please try again!\n");
+            Thread.Sleep(2000);
+
             return null;
         }
 
@@ -108,7 +114,7 @@ namespace CosmOS_Projekt.Userverwaltung
             while (true)
             {
                 Console.Write("Enter Password: ");
-                password = Console.ReadLine();
+                password = ReadPassword();
 
                 // Prüft, ob das Passwort gültig ist (Länge und keine verbotenen Zeichen)
                 if (!IsValidPassword(password))
@@ -117,7 +123,7 @@ namespace CosmOS_Projekt.Userverwaltung
                 }
 
                 Console.Write("Enter Password again: ");
-                string passwordRetype = Console.ReadLine();
+                string passwordRetype = ReadPassword();
 
                 // Stellt sicher, dass beide Passworteingaben übereinstimmen
                 if (password != passwordRetype)
@@ -169,6 +175,63 @@ namespace CosmOS_Projekt.Userverwaltung
 
             return true;
         }
-    }
 
+        /*
+        Liest ein Passwort von der Konsole ein, ohne die tatsächlichen Zeichen anzuzeigen.
+        Stattdessen werden Sternchen (*) angezeigt, um die Eingabe zu verschleiern.
+        Das eingegebene Passwort als String.
+        
+        Hinweis: Die Grundidee dieser Methode wurde inspiriert von einer generierten Vorlage (ChatGPT),
+        jedoch eigenständig angepasst und kommentiert.
+        */
+        public static string ReadPassword()
+        {
+            // Ein StringBuilder wird verwendet, um das Passwort zeichenweise sicher zusammenzusetzen.
+            StringBuilder passwordBuilder = new StringBuilder();
+            ConsoleKeyInfo keyInfo;
+
+            while (true)
+            {
+                // Liest eine Taste von der Konsole, ohne sie direkt anzuzeigen (true = keine Ausgabe).
+                keyInfo = Console.ReadKey(true);
+
+                // Prüft, ob die Enter-Taste gedrückt wurde (Signal für das Ende der Eingabe).
+                if (keyInfo.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine(); // Springt nach Abschluss der Eingabe in eine neue Zeile.
+                    break; // Bricht die Schleife ab und beendet die Eingabe.
+                }
+                // Prüft, ob die Backspace-Taste gedrückt wurde (zum Löschen des letzten Zeichens).
+                else if (keyInfo.Key == ConsoleKey.Backspace)
+                {
+                    // Wenn der Passwort-String nicht leer ist:
+                    if (passwordBuilder.Length > 0)
+                    {
+                        // Entfernt das letzte Zeichen aus dem Passwort.
+                        passwordBuilder.Remove(passwordBuilder.Length - 1, 1);
+
+                        // Löscht das letzte Sternchen von der Konsole.
+                        // Zeile 1 bewegt den Cursor zurück, " " überschreibt das Zeichen,
+                        // und Zeile 3 bewegt den Cursor erneut zurück.
+                        // Alternativ statt Zeile 1 und 3 geht ebenfalls Console.Write("\b \b");
+                        // -> schreibt Sonderzeichen auf die Befehlszeile (nicht erwünscht)
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                        Console.Write(" ");
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    }
+                }
+                else
+                {
+                    // Fügt das gedrückte Zeichen dem Passwort hinzu.
+                    passwordBuilder.Append(keyInfo.KeyChar);
+
+                    // Gibt ein Sternchen (*) auf der Konsole aus, um die Eingabe zu verschleiern.
+                    Console.Write("*");
+                }
+            }
+
+            // Gibt das vollständige Passwort als String zurück.
+            return passwordBuilder.ToString();
+        }
+    }
 }
