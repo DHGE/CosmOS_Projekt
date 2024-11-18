@@ -233,5 +233,16 @@ namespace CosmOS_Projekt.Userverwaltung
             // Gibt das vollständige Passwort als String zurück.
             return passwordBuilder.ToString();
         }
+        // löscht die alte Config Datei und erstellt eine neue aus der übergebenen User Liste.
+        public static void updateConfig(List<User> allUsers)
+        {
+            File.Delete(@"0:\Config\config.txt");
+            foreach (var user in allUsers)
+            {
+                string usrString = $"\n{user.Username}:{user.Vorname}:{user.Nachname}:{user.Password}:{user.Permission}";
+                File.AppendAllText(@"0:\Config\config.txt", usrString);
+            }
+            return;
+        }
     }
 }
