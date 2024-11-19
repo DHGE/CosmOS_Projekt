@@ -45,6 +45,11 @@ namespace CosmOS_Projekt
 
             Commands command = new Commands();
             command.commands(args);
+            ConsoleKeyInfo key = Console.ReadKey();
+            if ((key.Modifiers & ConsoleModifiers.Control) != 0 && key.Key == ConsoleKey.C)
+            {
+                return;
+            }
         }
 
         private void checkUsers()
