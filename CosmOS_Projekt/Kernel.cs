@@ -41,15 +41,10 @@ namespace CosmOS_Projekt
             var input = Console.ReadLine();
             string[] args = input.Split(' ');
 
-            if (args.Length < 1) return;
+            if (args.Length < 1) Console.WriteLine();
 
             Commands command = new Commands();
             command.commands(args);
-            ConsoleKeyInfo key = Console.ReadKey();
-            if ((key.Modifiers & ConsoleModifiers.Control) != 0 && key.Key == ConsoleKey.C)
-            {
-                return;
-            }
         }
 
         private void checkUsers()

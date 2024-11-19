@@ -183,12 +183,12 @@ namespace CosmOS_Projekt.Userverwaltung
                 Console.WriteLine("Please give existing Username");
                 return;
             }
-            if (!(Kernel.currentUser.Username == usr) || !(Kernel.currentUser.Permission == 1))
+            List<User> allUsers = UserControls.getAllUsers();
+            if (Kernel.currentUser.Username != usr && Kernel.currentUser.Permission == 0)
             {
                 Console.WriteLine("You don't have the permission to delete this User");
                 return;
             }
-            List<User> allUsers= UserControls.getAllUsers();
             foreach (var user in allUsers)
             {
 
@@ -196,6 +196,10 @@ namespace CosmOS_Projekt.Userverwaltung
                 {
                     allUsers.Remove(user);
                     Console.WriteLine("Successfully deleted User");
+                    if (Kernel.currentUser.Username == usr)
+                    {
+                        Kernel.currentUser = null;
+                    }
                     UserControls.updateConfig(allUsers);
                     return;
                 }
