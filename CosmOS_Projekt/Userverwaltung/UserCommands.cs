@@ -122,7 +122,37 @@ namespace CosmOS_Projekt.Userverwaltung
         // setzt Permissions eines Nutzers (nur für Admins -> Permission = 1)
         private void setPermissionCommand(string[] args)
         {
-
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Missing arguments, try \"user help\" for a quick view of all file commands!");
+                return;
+            }
+            short userPerm = Kernel.currentUser.Permission;
+            short perm = short.Parse(args[3]);
+            if (userPerm != 1)
+            {
+                Console.WriteLine("You're not allowed to change Permission levels");
+                return;
+            }
+            if (perm != 1 && perm != 0)
+            {
+                Console.WriteLine("Please give valid Permissionlevel(0,1)");
+                return;
+            }
+            string usr = args[2];
+            List<User> users = UserControls.getAllUsers();
+            foreach (var user in users)
+            {
+                if (user.Username == usr)
+                {
+                    user.Permission = perm;
+                    UserControls.updateConfig(users);
+                    Console.WriteLine("Permission succesfully changed");
+                    return;
+                }
+            }
+            Console.WriteLine("Please give existing Username");
+            return;
         }
 
         // gibt alle vorhanden User auf der Befehlszeile aus
