@@ -41,7 +41,7 @@ namespace CosmOS_Projekt
             var input = Console.ReadLine();
             string[] args = input.Split(' ');
 
-            if (args.Length < 1) return;
+            if (args.Length < 1) Console.WriteLine();
 
             Commands command = new Commands();
             command.commands(args);

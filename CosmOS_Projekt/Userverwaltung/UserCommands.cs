@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -24,7 +26,10 @@ namespace CosmOS_Projekt.Userverwaltung
                 { "create", args => createCommand(args) },
                 { "setperm", args => setPermissionCommand(args) },
                 { "list", args => listUsersCommand() },
-                { "logout", args => Kernel.currentUser = null }
+                { "logout", args => Kernel.currentUser = null },
+                { "del", args => deleteUserCommand(args) },
+                { "delete", args => deleteUserCommand(args) },
+                { "edit", args => editUserCommand(args) }
             };
         }
 
@@ -106,7 +111,7 @@ namespace CosmOS_Projekt.Userverwaltung
             {
                 // Erstellt ein neues User-Objekt und speichert es in der Konfigurationsdatei
                 User usr = new User(username, vorname, nachname, password, perm);
-                string pw = usr.GenerateHash(password);
+                string pw = UserControls.GenerateHash(password);
                 string usrString = $"\n{usr.Username}:{usr.Vorname}:{usr.Nachname}:{pw}:{perm}";
 
                 File.AppendAllText(@"0:\Config\config.txt", usrString);
@@ -165,6 +170,106 @@ namespace CosmOS_Projekt.Userverwaltung
             }
 
             Console.WriteLine($"\nTotal users: {UserControls.getAllUsers().Count}");
+        }
+        private void deleteUserCommand(string[] args)
+        {
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Missing arguments, try \"user help\" for a quick view of all file commands!");
+                return;
+            }
+            string usr = args[2];
+            if (!UserControls.CheckUsernameExists(usr))
+            {
+                Console.WriteLine("Please give existing Username");
+                return;
+            }
+            List<User> allUsers = UserControls.getAllUsers();
+            if (Kernel.currentUser.Username != usr && Kernel.currentUser.Permission == 0)
+            {
+                Console.WriteLine("You don't have the permission to delete this User");
+                return;
+            }
+            foreach (var user in allUsers)
+            {
+
+                if (user.Username == usr)
+                {
+                    allUsers.Remove(user);
+                    Console.WriteLine("Successfully deleted User");
+                    if (Kernel.currentUser.Username == usr)
+                    {
+                        Kernel.currentUser = null;
+                    }
+                    UserControls.updateConfig(allUsers);
+                    return;
+                }
+            }
+        }
+
+        private void editUserCommand(string[] args)
+        {
+            Console.WriteLine($"_________Editing User:{Kernel.currentUser.Username}__________");
+            Console.WriteLine("What do you want to edit?: Password, Username, Name");
+            string command = Console.ReadLine();
+            command = command.ToLower();
+            string oldusername = Kernel.currentUser.Username;
+            switch (command)
+            {
+                case "password":
+                    Console.WriteLine("Please enter your current password");
+                    string pw = UserControls.ReadPassword();
+                    pw = UserControls.GenerateHash(pw);
+                    if (pw == Kernel.currentUser.Password)
+                    {
+                        string pw1 = UserControls.PromptForPassword();
+                        Kernel.currentUser.Password = UserControls.GenerateHash(pw1);
+                        Console.WriteLine("Password successfully changed");
+                    }
+                    break;
+                case "username":
+                    Console.WriteLine($"Old Username: {Kernel.currentUser.Username}");
+                    Kernel.currentUser.Username = UserControls.PromptForUniqueUsername();
+                    break;
+                case "name":
+                    Console.WriteLine($"Current Name: {Kernel.currentUser.Vorname} {Kernel.currentUser.Nachname}");
+                    Console.Write("New Name:");
+                    string name = Console.ReadLine();
+                    string[] test = name.Split(" ");
+                    Kernel.currentUser.Vorname = test[0];
+                    Kernel.currentUser.Nachname = test[1];
+                    Console.WriteLine("Name successfully changed");
+                    break;
+                default:
+                    Console.WriteLine("Invalid input");
+                    return;
+            }
+            List<User> oldUsers = UserControls.getAllUsers();
+            foreach (var user in oldUsers)
+            {
+                if (user.Username == oldusername)
+                {
+                    if (command == "username")
+                    {
+                        user.Username = Kernel.currentUser.Username;
+                        UserControls.updateConfig(oldUsers);
+                        return;
+                    }
+                    if (command == "password")
+                    {
+                        user.Password = Kernel.currentUser.Password;
+                        UserControls.updateConfig(oldUsers);
+                        return;
+                    }
+                    else
+                    {
+                        user.Vorname = Kernel.currentUser.Vorname;
+                        user.Nachname = Kernel.currentUser.Nachname;
+                        UserControls.updateConfig(oldUsers);
+                        return;
+                    }
+                }
+            }
         }
     }
 }
