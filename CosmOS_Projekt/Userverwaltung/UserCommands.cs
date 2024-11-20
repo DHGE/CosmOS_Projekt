@@ -28,7 +28,8 @@ namespace CosmOS_Projekt.Userverwaltung
                 { "list", args => listUsersCommand() },
                 { "logout", args => Kernel.currentUser = null },
                 { "del", args => deleteUserCommand(args) },
-                { "delete", args => deleteUserCommand(args) }
+                { "delete", args => deleteUserCommand(args) },
+                { "edit", args => editUserCommand(args) }
             };
         }
 
@@ -211,7 +212,7 @@ namespace CosmOS_Projekt.Userverwaltung
             Console.WriteLine($"_________Editing User:{Kernel.currentUser.Username}__________");
             Console.WriteLine("What do you want to edit?: Password, Username, Name");
             string command = Console.ReadLine();
-            command.ToLower();
+            command = command.ToLower();
             string oldusername = Kernel.currentUser.Username;
             switch (command)
             {
@@ -231,10 +232,43 @@ namespace CosmOS_Projekt.Userverwaltung
                     Kernel.currentUser.Username = UserControls.PromptForUniqueUsername();
                     break;
                 case "name":
+                    Console.WriteLine($"Current Name: {Kernel.currentUser.Vorname} {Kernel.currentUser.Nachname}");
+                    Console.Write("New Name:");
+                    string name = Console.ReadLine();
+                    string[] test = name.Split(" ");
+                    Kernel.currentUser.Vorname = test[0];
+                    Kernel.currentUser.Nachname = test[1];
+                    Console.WriteLine("Name successfully changed");
                     break;
                 default:
                     Console.WriteLine("Invalid input");
                     return;
+            }
+            List<User> oldUsers = UserControls.getAllUsers();
+            foreach (var user in oldUsers)
+            {
+                if (user.Username == oldusername)
+                {
+                    if (command == "username")
+                    {
+                        user.Username = Kernel.currentUser.Username;
+                        UserControls.updateConfig(oldUsers);
+                        return;
+                    }
+                    if (command == "password")
+                    {
+                        user.Password = Kernel.currentUser.Password;
+                        UserControls.updateConfig(oldUsers);
+                        return;
+                    }
+                    else
+                    {
+                        user.Vorname = Kernel.currentUser.Vorname;
+                        user.Nachname = Kernel.currentUser.Nachname;
+                        UserControls.updateConfig(oldUsers);
+                        return;
+                    }
+                }
             }
         }
     }

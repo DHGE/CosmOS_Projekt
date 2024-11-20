@@ -35,7 +35,8 @@ namespace CosmOS_Projekt
                 { "cd", args => cdCommand(args) },
                 { "file", args => InitializeFilesystem(args) },
                 { "user", args => InitializeUsers(args) },
-                { "clear", args => Console.Clear() }
+                { "clear", args => Console.Clear() },
+                { "whoami", args => Console.WriteLine(Kernel.currentUser.Username) }
             };
         }
 
