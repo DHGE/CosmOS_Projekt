@@ -94,6 +94,11 @@ namespace CosmOS_Projekt.Userverwaltung
                 Console.WriteLine("You're not allowed to create a user with higher permissions!");
                 return;
             }
+            if (perm >= 2)
+            {
+                Console.WriteLine("Please give a valid Permission´level(0,1");
+                return;
+            }
 
             createCommand(perm);
         }
@@ -127,24 +132,29 @@ namespace CosmOS_Projekt.Userverwaltung
         // setzt Permissions eines Nutzers (nur für Admins -> Permission = 1)
         private void setPermissionCommand(string[] args)
         {
-            if (args.Length < 3)
+            if (args.Length < 4)
             {
                 Console.WriteLine("Missing arguments, try \"user help\" for a quick view of all file commands!");
                 return;
             }
+            string usr = args[2];
+            if (usr == "root")
+            {
+                Console.WriteLine("The permission of root can't be changed");
+                return;
+            }
             short userPerm = Kernel.currentUser.Permission;
             short perm = short.Parse(args[3]);
-            if (userPerm != 1)
+            if (userPerm < 1)
             {
                 Console.WriteLine("You're not allowed to change Permission levels");
                 return;
             }
-            if (perm != 1 && perm != 0)
+            if (perm  > 1)
             {
                 Console.WriteLine("Please give valid Permissionlevel(0,1)");
                 return;
             }
-            string usr = args[2];
             List<User> users = UserControls.getAllUsers();
             foreach (var user in users)
             {
@@ -195,6 +205,11 @@ namespace CosmOS_Projekt.Userverwaltung
 
                 if (user.Username == usr)
                 {
+                    if (user.Permission >= Kernel.currentUser.Permission)
+                    {
+                        Console.WriteLine("You don't have the permission to delete this user");
+                        return;
+                    }
                     allUsers.Remove(user);
                     Console.WriteLine("Successfully deleted User");
                     if (Kernel.currentUser.Username == usr)
@@ -209,35 +224,43 @@ namespace CosmOS_Projekt.Userverwaltung
 
         private void editUserCommand(string[] args)
         {
-            Console.WriteLine($"_________Editing User:{Kernel.currentUser.Username}__________");
+            User olduser = Kernel.currentUser;
+            if (args.Length >= 3 && args[2] != Kernel.currentUser.Username)
+            {
+                olduser = editUserCommand(args[2]);
+                if (olduser == null)
+                {
+                    return;
+                }
+            }
+            Console.WriteLine($"_________Editing User:{olduser.Username}__________");
             Console.WriteLine("What do you want to edit?: Password, Username, Name");
             string command = Console.ReadLine();
             command = command.ToLower();
-            string oldusername = Kernel.currentUser.Username;
             switch (command)
             {
                 case "password":
                     Console.WriteLine("Please enter your current password");
                     string pw = UserControls.ReadPassword();
                     pw = UserControls.GenerateHash(pw);
-                    if (pw == Kernel.currentUser.Password)
+                    if (pw == olduser.Password)
                     {
                         string pw1 = UserControls.PromptForPassword();
-                        Kernel.currentUser.Password = UserControls.GenerateHash(pw1);
+                        olduser.Password = UserControls.GenerateHash(pw1);
                         Console.WriteLine("Password successfully changed");
                     }
                     break;
                 case "username":
-                    Console.WriteLine($"Old Username: {Kernel.currentUser.Username}");
-                    Kernel.currentUser.Username = UserControls.PromptForUniqueUsername();
+                    Console.WriteLine($"Old Username: {olduser.Username}");
+                    olduser.Username = UserControls.PromptForUniqueUsername();
                     break;
                 case "name":
-                    Console.WriteLine($"Current Name: {Kernel.currentUser.Vorname} {Kernel.currentUser.Nachname}");
+                    Console.WriteLine($"Current Name: {olduser.Vorname} {olduser.Nachname}");
                     Console.Write("New Name:");
                     string name = Console.ReadLine();
                     string[] test = name.Split(" ");
-                    Kernel.currentUser.Vorname = test[0];
-                    Kernel.currentUser.Nachname = test[1];
+                    olduser.Vorname = test[0];
+                    olduser.Nachname = test[1];
                     Console.WriteLine("Name successfully changed");
                     break;
                 default:
@@ -247,29 +270,61 @@ namespace CosmOS_Projekt.Userverwaltung
             List<User> oldUsers = UserControls.getAllUsers();
             foreach (var user in oldUsers)
             {
-                if (user.Username == oldusername)
+                if (user.Username == olduser.Username)
                 {
                     if (command == "username")
                     {
-                        user.Username = Kernel.currentUser.Username;
+                        user.Username = olduser.Username;
                         UserControls.updateConfig(oldUsers);
                         return;
                     }
                     if (command == "password")
                     {
-                        user.Password = Kernel.currentUser.Password;
+                        user.Password = olduser.Password;
                         UserControls.updateConfig(oldUsers);
                         return;
                     }
                     else
                     {
-                        user.Vorname = Kernel.currentUser.Vorname;
-                        user.Nachname = Kernel.currentUser.Nachname;
+                        user.Vorname = olduser.Vorname;
+                        user.Nachname = olduser.Nachname;
                         UserControls.updateConfig(oldUsers);
                         return;
                     }
                 }
             }
+        }
+
+        private User editUserCommand(string usr)
+        {
+            if (!UserControls.CheckUsernameExists(usr))
+            {
+                Console.WriteLine("Please give an existing username");
+                return null;
+            }
+            if (Kernel.currentUser.Permission == 0)
+            {
+                Console.WriteLine("You don't have the permission to edit other users");
+                return null;
+            }
+            List<User> allUsers = UserControls.getAllUsers();
+            foreach (var user in allUsers)
+            {
+                if (user.Username == usr)
+                {
+                    if (Kernel.currentUser.Permission == 2)
+                    {
+                        return user;
+                    }
+                    if (user.Permission != 0)
+                    {
+                        Console.WriteLine("You don't have the permission to edit this user");
+                        return null;
+                    }
+                    return user;
+                }
+            }
+            return null;
         }
     }
 }

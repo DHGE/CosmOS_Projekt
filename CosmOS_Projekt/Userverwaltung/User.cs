@@ -15,6 +15,7 @@ namespace CosmOS_Projekt.Userverwaltung
         private string nachname;
         // 0 - "no" permission (user)
         // 1 - all permissions (admin)
+        // 2 - root
         private short permission;
 
         public User() { }
