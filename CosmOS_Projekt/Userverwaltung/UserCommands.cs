@@ -155,6 +155,11 @@ namespace CosmOS_Projekt.Userverwaltung
                 Console.WriteLine("Please give valid Permissionlevel(0,1)");
                 return;
             }
+            if (perm > userPerm)
+            {
+                Console.WriteLine("You are not allowed to set higher Permissions then your own");
+                return;
+            }
             List<User> users = UserControls.getAllUsers();
             foreach (var user in users)
             {
