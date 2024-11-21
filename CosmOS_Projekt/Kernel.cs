@@ -41,8 +41,6 @@ namespace CosmOS_Projekt
             var input = Console.ReadLine();
             string[] args = input.Split(' ');
 
-            if (args.Length < 1) Console.WriteLine();
-
             Commands command = new Commands();
             command.commands(args);
         }
@@ -66,8 +64,21 @@ namespace CosmOS_Projekt
 
             // Count admins in the users list
             int adminCnt = users.Count(user => user.Permission == 1);
-
-            if (adminCnt == 0)
+            int rootCnt = users.Count(user => user.Permission == 2);
+            if (rootCnt == 0)
+            {
+                User root = new User();
+                root.Username = "root";
+                root.Vorname = "root";
+                root.Nachname = "root";
+                Console.WriteLine("Please set a password for the root account");
+                string password = UserControls.PromptForPassword();
+                root.Password = password;
+                password = UserControls.GenerateHash(password);
+                string usrString = $"\n{root.Username}:{root.Vorname}:{root.Nachname}:{password}:{2}";
+                File.AppendAllText(@"0:\Config\config.txt", usrString);
+            }
+                if (adminCnt == 0)
             {
                 Console.WriteLine("There is no Admin account!\nPlease create one now!\n");
                 UserCommands.createCommand(1);  // Prompt to create an admin
