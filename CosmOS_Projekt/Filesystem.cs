@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Xml.Linq;
 
 namespace CosmOS_Projekt
 {
@@ -271,7 +272,7 @@ namespace CosmOS_Projekt
                     }
                 }
 
-                Kernel.fs.CreateFile(path);
+                Files file = new Files(args[2], path, Kernel.currentUser.Username);
                 Console.WriteLine("Successfully created file!");
             }
             catch (Exception e)
@@ -337,6 +338,7 @@ namespace CosmOS_Projekt
                         // Überprüfen, ob die Datei existiert
                         if (!checkFile(path)) return;
 
+                        File.Delete(@"0:\Config\" + input + "_Permission.txt");
                         File.Delete(path);
                         Console.WriteLine("Successfully deleted file!");
                     }
