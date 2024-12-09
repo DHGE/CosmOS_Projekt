@@ -115,9 +115,10 @@ namespace CosmOS_Projekt
                               "echo - outputs the given text\n\n" +
                               "cd [directory] - changes to specified directory\n" +
                               "cd .. - moves one directory up\n\n" +
-                              "Filesystem Commands:\n" +
+                              "whoami - outputs the name of the current logged in user" +
+                              "file - Filesystem Commands:\n" +
                               "file help - list all filesystem commands\n\n" +
-                              "User Commands:\n" +
+                              "user - User Commands:\n" +
                               "user help - list all user specific commands\n");
         }
 

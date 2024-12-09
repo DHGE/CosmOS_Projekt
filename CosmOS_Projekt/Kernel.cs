@@ -14,6 +14,7 @@ namespace CosmOS_Projekt
         public static Sys.FileSystem.CosmosVFS fs;  // Static variable for filesystem
         public static List<User> users;
         public static User currentUser = null;
+        private Commands command;
 
         protected override void BeforeRun()
         {
@@ -26,6 +27,7 @@ namespace CosmOS_Projekt
 
             Console.WriteLine("Cosmos booted successfully.");
             momentOfStart = DateTime.Now;
+            command = new Commands();
         }
 
         protected override void Run()
@@ -38,10 +40,9 @@ namespace CosmOS_Projekt
 
             Console.Write($"{Commands.currentDirectory}> "); // Zeigt immer den aktuellen Pfad an
 
-            var input = Console.ReadLine();
+            var input = Console.ReadLine() ?? " ";
             string[] args = input.Split(' ');
 
-            Commands command = new Commands();
             command.commands(args);
         }
 
@@ -61,9 +62,6 @@ namespace CosmOS_Projekt
                 Console.WriteLine($"Error loading users: {ex.Message}");
                 return;
             }
-
-            // Count admins in the users list
-            int adminCnt = users.Count(user => user.Permission == 1);
             int rootCnt = users.Count(user => user.Permission == 2);
             if (rootCnt == 0)
             {
@@ -77,11 +75,6 @@ namespace CosmOS_Projekt
                 password = UserControls.GenerateHash(password);
                 string usrString = $"\n{root.Username}:{root.Vorname}:{root.Nachname}:{password}:{2}";
                 File.AppendAllText(@"0:\Config\config.txt", usrString);
-            }
-                if (adminCnt == 0)
-            {
-                Console.WriteLine("There is no Admin account!\nPlease create one now!\n");
-                UserCommands.createCommand(1);  // Prompt to create an admin
             }
         }
     }

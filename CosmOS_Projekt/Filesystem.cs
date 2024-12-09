@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.IO;
+using System.Xml.Linq;
 
 namespace CosmOS_Projekt
 {
@@ -176,7 +178,10 @@ namespace CosmOS_Projekt
             if (!checkString(path)) return;
 
             path += args[2];
-
+            if (path.StartsWith(@"0:\config\") && Kernel.currentUser.Permission == 0)
+            {
+                Console.WriteLine("You are not allowed to open this file");
+            }
             // check if file exists
             if (!checkFile(path)) return;
 
@@ -207,6 +212,7 @@ namespace CosmOS_Projekt
                 }
                 else if (input.ToLower() == "w")
                 {
+                    if (!protectConfig(path)) return;
                     var text = "";
                     while (text != "quit\n")
                         // append the file with the given text
@@ -253,6 +259,7 @@ namespace CosmOS_Projekt
 
             path += args[2];
 
+            if (!protectConfig(path)) return;
             try
             {
                 // if the file already exists, do nothing
@@ -271,7 +278,7 @@ namespace CosmOS_Projekt
                     }
                 }
 
-                Kernel.fs.CreateFile(path);
+                Files file = new Files(args[2], path, Kernel.currentUser.Username);
                 Console.WriteLine("Successfully created file!");
             }
             catch (Exception e)
@@ -290,6 +297,7 @@ namespace CosmOS_Projekt
 
             path += args[2];
 
+            if (!protectConfig(path)) return;
             // add a \ at the end to make sure its a valid directory
             if (!path.EndsWith('\\')) { path += '\\'; }
 
@@ -326,6 +334,7 @@ namespace CosmOS_Projekt
                 case "f":
                     try
                     {
+                        
                         Console.WriteLine("Which file do you want to delete?");
                         var input = Console.ReadLine();
 
@@ -334,9 +343,12 @@ namespace CosmOS_Projekt
 
                         path += input;
 
+                        if (!protectConfig(path)) return;
+
                         // Überprüfen, ob die Datei existiert
                         if (!checkFile(path)) return;
 
+                        File.Delete(@"0:\Config\" + input + "_Permission.txt");
                         File.Delete(path);
                         Console.WriteLine("Successfully deleted file!");
                     }
@@ -357,6 +369,7 @@ namespace CosmOS_Projekt
 
                         path += input;
 
+                        // Hier braucht nicht überprüft zu werden ob man die Config Directory löschen will, weil das nur geht wenn keine Dateien darin sind
                         // Sicherstellen, dass der Pfad mit einem '\' endet, falls nicht vorhanden
                         if (!path.EndsWith('\\')) path += '\\';
 
@@ -393,6 +406,8 @@ namespace CosmOS_Projekt
             string sourcePath = Path.Combine(path, args[2]);
             string fileName = Path.GetFileName(args[2]);
             string destinationPath = Path.Combine(@"0:\", args[3]);
+            if (!protectConfig(sourcePath)) return;
+            if (!protectConfig(destinationPath)) return;
 
             try
             {
@@ -439,6 +454,7 @@ namespace CosmOS_Projekt
 
             path += args[2];
 
+            if (!protectConfig(path)) return;
             // check if file exists
             if (!checkFile(path)) return;
 
@@ -480,6 +496,13 @@ namespace CosmOS_Projekt
         {
             if (args.Length >= index) return true;
             Console.WriteLine("Missing arguments");
+            return false;
+        }
+        bool protectConfig(string path)
+        {
+            if (Kernel.currentUser.Username == "root") return true;
+            if (path.StartsWith(@"0:\Config\")) return true;
+            Console.WriteLine("You don't have access to the config directory");
             return false;
         }
     }
