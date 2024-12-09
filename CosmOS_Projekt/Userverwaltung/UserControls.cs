@@ -62,6 +62,7 @@ namespace CosmOS_Projekt.Userverwaltung
                     if(GenerateHash(password) == user.Password)
                     {
                         Console.WriteLine($"\nWelcome back, {user.Username} ({user.Vorname})!\n");
+                        Console.WriteLine("--------------------------------------------------------------\nWarning if you input an empty line, the program will crash!!!!\n--------------------------------------------------------------\n");
                         return user;
                     }
                 }

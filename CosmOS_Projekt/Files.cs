@@ -11,7 +11,7 @@ namespace CosmOS_Projekt
 {
     public class Files
     {
-        // 000 - "no" permission
+        // 000 - no permission
         // 001 - read permission
         // 011 - read and write permission
         // 111 - all permissions
@@ -24,7 +24,7 @@ namespace CosmOS_Projekt
             this.name = name;
             this.path = path;
             this.owner = owner;
-            Kernel.fs.CreateFile(path + name);
+            Kernel.fs.CreateFile(path);
             CreateConfig();
         }
 
@@ -54,20 +54,20 @@ namespace CosmOS_Projekt
             {
                 if (u.Username == owner)
                 {
-                    File.AppendAllText(Config_path, u.Username + ":" + "111");
+                    File.AppendAllText(Config_path, "\n" + u.Username + ":" + "111:Owner");
                     
                 }
                 else if (u.Permission == 2)
                 {
-                    File.AppendAllText(Config_path, u.Username + ":" + "111");
+                    File.AppendAllText(Config_path, "\n" + u.Username + ":" + "111");
                 }
                 else if (u.Permission == 1)
                 {
-                    File.AppendAllText(Config_path, u.Username + ":" + "001");
+                    File.AppendAllText(Config_path, "\n" + u.Username + ":" + "001");
                 }
                 else
                 {
-                    File.AppendAllText(Config_path, u.Username + ":" + "000");
+                    File.AppendAllText(Config_path, "\n" + u.Username + ":" + "000");
                 }
             });
             return;

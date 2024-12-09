@@ -71,7 +71,10 @@ namespace CosmOS_Projekt.Userverwaltung
                 "user [OPTIONS]..\n" +
                 "[OPTIONS] - specifies the specific commands\n" +
                 "create - creates a new user\n" +
-                "setperm - change the permission of a user\n" +
+                "setperm [target User] [Permission] - change the permission of a user\n" +
+                "edit [user] - edits all parameters except for the permission" +
+                "del [user] || delete [user] - deletes a user" +
+                "logout - log out of the current users account" +
                 "list - lists all users");
         }
 
