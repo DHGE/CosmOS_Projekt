@@ -24,7 +24,7 @@ namespace CosmOS_Projekt
             this.name = name;
             this.path = path;
             this.owner = owner;
-            Kernel.fs.CreateFile(path);
+            Kernel.fs.CreateFile(@"0:\"+path);
             CreateConfig();
         }
 
@@ -48,14 +48,13 @@ namespace CosmOS_Projekt
 
         private void CreateConfig()
         {
-            string Config_path = @"0:\Config\" + name + "_Permission.txt";
+            string Config_path = @"0:\Config\" + this.path.ToString().Replace('\\','_') + "_Permission.txt";
             Kernel.fs.CreateFile(Config_path);
             Userverwaltung.UserControls.getAllUsers().ForEach(u =>
             {
                 if (u.Username == owner)
                 {
                     File.AppendAllText(Config_path, "\n" + u.Username + ":" + "111:Owner");
-                    
                 }
                 else if (u.Permission == 2)
                 {

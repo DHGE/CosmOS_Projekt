@@ -27,7 +27,6 @@ namespace CosmOS_Projekt
 
             Console.WriteLine("Cosmos booted successfully.");
             momentOfStart = DateTime.Now;
-            command = new Commands();
         }
 
         protected override void Run()
@@ -43,6 +42,7 @@ namespace CosmOS_Projekt
             var input = Console.ReadLine() ?? " ";
             string[] args = input.Split(' ');
 
+            command = new Commands();
             command.commands(args);
         }
 

@@ -277,8 +277,10 @@ namespace CosmOS_Projekt
                         return;
                     }
                 }
-
-                Files file = new Files(args[2], path, Kernel.currentUser.Username);
+                string name = path.Split("\\")[path.Split('\\').Length - 1];
+                string tmp_path = path.Remove(0, 3);
+                Console.WriteLine($"{tmp_path}");
+                Files file = new Files(name, tmp_path, Kernel.currentUser.Username);
                 Console.WriteLine("Successfully created file!");
             }
             catch (Exception e)
@@ -347,8 +349,9 @@ namespace CosmOS_Projekt
 
                         // Überprüfen, ob die Datei existiert
                         if (!checkFile(path)) return;
-
-                        File.Delete(@"0:\Config\" + input + "_Permission.txt");
+                        string tmp_path = path.Remove(0, 3);
+                        tmp_path = tmp_path.ToString().Replace("\\", "_");
+                        File.Delete(@"0:\Config\" + tmp_path + "_Permission.txt");
                         File.Delete(path);
                         Console.WriteLine("Successfully deleted file!");
                     }
@@ -501,7 +504,7 @@ namespace CosmOS_Projekt
         bool protectConfig(string path)
         {
             if (Kernel.currentUser.Username == "root") return true;
-            if (path.StartsWith(@"0:\Config\")) return true;
+            if (!path.StartsWith(@"0:\Config\")) return true;
             Console.WriteLine("You don't have access to the config directory");
             return false;
         }
